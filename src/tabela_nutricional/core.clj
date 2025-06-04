@@ -37,40 +37,46 @@
     (print "Digite a porcao consumida em gramas: ") (flush)
     (let [porcao (read)
           url (str "http://localhost:3000/alimentos/" alimento)]
-      (try
-        (let [resposta (http/get url {:headers {"Accept" "application/json"}})
-              body (json/parse-string (:body resposta) true)]
 
-          (if (and body (seq body))
-            (do
-              (println "\n========================== Alimentos ==========================")
-              (imprimir-opcoes-alimentos body)
+      ;; Leitura da data como string
+      (read-line) ;; descarta o \n deixado por 'read' anterior
+      (print "Digite a data da refeicao (dd/mm/aaaa): ") (flush)
+      (let [data (read-line)]
 
-              (print "\nEscolha o numero do alimento que deseja registrar: ") (flush)
-              (let [indice (read)
-                    escolhido (nth body indice)
-                    dados-envio {:alimento (str (:nome escolhido))
-                                 ;;:data data
-                                 :caloria (:calorias escolhido)
-                                 :quantidade porcao}]
-                ;(println "Dados a enviar para o backend:" dados-envio)
-                ;; Envia para a API (endpoint ainda será criado no back-end)
-                (http/post "http://localhost:3000/consumo"
-                           {:body (json/encode dados-envio)
-                            :headers {"Content-Type" "application/json"}})
+        (try
+          (let [resposta (http/get url {:headers {"Accept" "application/json"}})
+                body (json/parse-string (:body resposta) true)]
 
-                (println "\n===============================================================\n")
-                (println "Alimento registrado com sucesso!")
-                (println "Alimento:" (:nome escolhido))
-                (println "Caloria:" (:calorias escolhido) "kcal")
-                (println "Porcao consumida:" porcao "g")))
+            (if (and body (seq body))
+              (do
+                (println "\n========================== Alimentos ==========================")
+                (imprimir-opcoes-alimentos body)
 
-            (println "Nenhum alimento encontrado.")))
+                (print "\nEscolha o numero do alimento que deseja registrar: ") (flush)
+                (let [indice (read)
+                      escolhido (nth body indice)
+                      dados-envio {:alimento (str (:nome escolhido))
+                                   :data data
+                                   :caloria (:calorias escolhido)
+                                   :quantidade porcao}]
 
-        (catch Exception e
-          (println "Erro ao registrar alimento:" (.getMessage e))))))
-  (println "\n===============================================================\n")
-  )
+                  (http/post "http://localhost:3000/consumo"
+                             {:body (json/encode dados-envio)
+                              :headers {"Content-Type" "application/json"}})
+
+                  (println "\n===============================================================\n")
+                  (println "Alimento registrado com sucesso!")
+                  (println "Alimento:" (:nome escolhido))
+                  (println "Data:" data)
+                  (println "Caloria:" (:calorias escolhido) "kcal")
+                  (println "Porcao consumida:" porcao "g")))
+
+              (println "Nenhum alimento encontrado.")))
+
+          (catch Exception e
+            (println "Erro ao registrar alimento:" (.getMessage e)))))))
+  (println "\n===============================================================\n"))
+
 
 ;; Função auxiliar com recursão de cauda para imprimir opções
 (defn imprimir-opcoes-atividades
@@ -89,35 +95,44 @@
     (print "Digite a duracao da atividade em minutos: ") (flush)
     (let [tempo (read)
           url (str "http://localhost:3000/exercicios/" atividade "/" tempo)]
-      (try
-        (let [resposta (http/get url {:headers {"Accept" "application/json"}})
-              body (json/parse-string (:body resposta) true)
-              opcoes (:resultados body)]
 
-          (if (and opcoes (seq opcoes))
-            (do
-              (println "\n==================== Atividades Sugeridas =====================")
-              (imprimir-opcoes-atividades opcoes)
+      (read-line) ;; descarta o \n deixado por 'read' anterior
+      (print "Digite a data da atividade (dd/mm/aaaa): ") (flush)
+      (let [data (read-line)]
 
-              (print "\nEscolha o numero da atividade que deseja registrar: ") (flush)
-              (let [indice  (read)
-                    escolhida (nth opcoes indice)
-                    dados-envio {:atividade (:atividade escolhida)
-                                 :tempo tempo}]
-                ;; Envia para a API
-                (http/post "http://localhost:3000/atividade"
-                           {:body (json/encode dados-envio)
-                            :headers {"Content-Type" "application/json"}})
-                (println "\n===============================================================\n")
-                (println "Atividade registrada com sucesso!")
-                (println "Atividade:" (:atividade escolhida))
-                (println "Calorias gastas:" (:calorias escolhida) "kcal"))
-                (println "\n===============================================================\n"))
+        (try
+          (let [resposta (http/get url {:headers {"Accept" "application/json"}})
+                body (json/parse-string (:body resposta) true)
+                opcoes (:resultados body)]
 
-            (println "Nenhuma atividade encontrada.")))
+            (if (and opcoes (seq opcoes))
+              (do
+                (println "\n==================== Atividades Sugeridas =====================")
+                (imprimir-opcoes-atividades opcoes)
 
-        (catch Exception e
-          (println "Erro ao registrar atividade:" (.getMessage e)))))))
+                (print "\nEscolha o numero da atividade que deseja registrar: ") (flush)
+                (let [indice (read)
+                      escolhida (nth opcoes indice)
+                      dados-envio {:atividade (:atividade escolhida)
+                                   :tempo tempo
+                                   :data data}]
+                  ;; Envia para a API
+                  (http/post "http://localhost:3000/atividade"
+                             {:body (json/encode dados-envio)
+                              :headers {"Content-Type" "application/json"}})
+
+                  ;; Impressão do resumo
+                  (println "\n===============================================================\n")
+                  (println "Atividade registrada com sucesso!")
+                  (println "Atividade:" (:atividade escolhida))
+                  (println "Calorias gastas:" (:calorias escolhida) "kcal")
+                  (println "Data:" data)
+                  (println "\n===============================================================\n")))
+
+              (println "Nenhuma atividade encontrada.")))
+
+          (catch Exception e
+            (println "Erro ao registrar atividade:" (.getMessage e))))))))
 
 
 ;; INICIO USUARIO
