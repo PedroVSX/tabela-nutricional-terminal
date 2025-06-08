@@ -215,20 +215,22 @@
 
 (defn cadastrar-usuario []
   (println "\n=================== Informe os dados abaixo ===================")
+  (read-line) ;; <- Consome o \n pendente, evita pular a leitura do nome
   (print "Digite seu nome: ") (flush)
-  (let [nome (read)]
+  (let [nome (read-line)]
     (print "Digite sua altura (em cm): ") (flush)
-    (let [altura (read)]
+    (let [altura (Double/parseDouble (read-line))]
       (print "Digite seu peso (em kg): ") (flush)
-      (let [peso (read)]
+      (let [peso (Double/parseDouble (read-line))]
         (print "Digite sua idade (em anos): ") (flush)
-        (let [idade (read)]
+        (let [idade (Integer/parseInt (read-line))]
           (print "Diga seu sexo (Masculino/Feminino): ") (flush)
-          (let [sexo (read)]
+          (let [sexo (read-line)]
             (salvar-dados-usuario nome altura peso idade sexo))))))
   (println "===============================================================\n")
-  (menu-cliente-cadastrado)
-  )
+  (menu-cliente-cadastrado))
+
+
 
 (defn menu-cliente-nao-cadastrado []
   (println "\n======================= Menu de Cadastro ======================")
